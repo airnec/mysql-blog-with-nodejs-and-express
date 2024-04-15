@@ -8,8 +8,12 @@ router.get('/', function (req, res) {
   res.redirect('posts');
 });
 
-router.get('/posts', function (req, res) {
-  res.render('posts-list');
+router.get('/posts', async function (req, res) {
+  const query = `
+  SELECT posts.*, authors.name AS author_name FROM posts
+  INNER JOIN authors ON posts.author_id = authors.id`;
+  const [posts] = await db.query(query);
+  res.render('posts-list', { posts: posts });
 });
 
 router.post('/posts', async function (req, res) {
@@ -19,9 +23,10 @@ router.post('/posts', async function (req, res) {
     req.body.content,
     req.body.author,
   ];
-  await db.query('INSERT INTO posts (title, summary, body, author_id) VALUES (?)', [
-    data,
-  ]);
+  const [reviews] = await db.query(
+    'INSERT INTO posts (title, summary, body, author_id) VALUES (?)',
+    [data]
+  );
   res.redirect('/posts');
 });
 
