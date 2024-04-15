@@ -30,7 +30,7 @@ router.post('/posts', async function (req, res) {
   res.redirect('/posts');
 });
 
-router.get('/posts/:id', async function(req, res) {
+router.get('/posts/:id', async function (req, res) {
   const query = `
   SELECT posts.*, authors.name AS author_name, authors.email AS author_email FROM posts
   INNER JOIN authors ON posts.author_id = authors.id
@@ -41,8 +41,8 @@ router.get('/posts/:id', async function(req, res) {
 
   if (!posts || posts.length === 0) {
     return res.status(404).render('404');
-  };
-  
+  }
+
   const postDate = {
     ...posts[0],
     date: posts[0].date.toISOString(),
@@ -50,12 +50,12 @@ router.get('/posts/:id', async function(req, res) {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
-    })
+      day: 'numeric',
+    }),
   };
 
-  res.render('post-detail', {post: postDate});
-})
+  res.render('post-detail', { post: postDate });
+});
 
 router.get('/new-post', async function (req, res) {
   const [authors] = await db.query('SELECT * FROM authors');
@@ -70,9 +70,25 @@ router.get('/posts/:id/edit', async function (req, res) {
 
   if (!posts || posts.length === 0) {
     return res.status(404).render('404');
-  };
+  }
 
-  res.render('update-post', {post: posts[0]});
-})
+  res.render('update-post', { post: posts[0] });
+});
+
+router.post('/posts/:id/edit', async function (req, res) {
+  const query = `
+  UPDATE posts SET title = ?, summary = ?, body = ?
+  WHERE id = ? 
+`;
+
+  await db.query(query, [
+    req.body.title,
+    req.body.summary,
+    req.body.content,
+    req.params.id,
+  ]);
+
+  res.redirect('/posts');
+});
 
 module.exports = router;
